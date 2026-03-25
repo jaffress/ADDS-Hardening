@@ -1,17 +1,19 @@
 # 📂 Infrastructure Windows Server - AD / DNS / DHCP
 
+## Elif JAFFRES
+
 ## 📖 Introduction
 Ce projet documente la mise en place d'une infrastructure réseau sécurisée basée sur Windows Server 2022. L'objectif est de fournir un service d'annuaire (Active Directory) hautement disponible, une résolution de noms (DNS) et une attribution d'adresses dynamique (DHCP).
 
 ---
 
-# 🏛️ Projet Infrastructure Windows Server - AD / DNS / DHCP
+# Projet Infrastructure Windows Server - AD / DNS / DHCP
 
-Bienvenue dans le rapport complet de déploiement de l'infrastructure réseau `tp.local`. Ce projet simule un environnement d'entreprise réel avec deux contrôleurs de domaine redondants et une gestion centralisée des postes clients.
+Le rapport complet de déploiement de l'infrastructure réseau `tp.local`. Ce projet simule un environnement d'entreprise réel avec deux contrôleurs de domaine redondants et une gestion centralisée des postes clients.
 
 ![Aperçu Infrastructure](./images/serveur01-adforestinstalled-redemarrage.png)
 
-## 📋 État du Projet
+## États
 | Composant | Status | Description |
 | :--- | :--- | :--- |
 | **SRV-DC01** | ✅ Opérationnel | Maître d'opérations, DNS, DHCP |
@@ -21,9 +23,9 @@ Bienvenue dans le rapport complet de déploiement de l'infrastructure réseau `t
 
 ---
 
-## 📂 Navigation dans la Documentation
+## Navigation dans la Documentation
 
-Pour une exploration détaillée de chaque phase, utilise les guides ci-dessous :
+Pour une exploration détaillée de chaque phase, utilisez les guides ci-dessous :
 
 ### 1. [Infrastructure Active Directory](./docs/active-directory/README.md)
 *Promotion des contrôleurs, réplication et santé de l'annuaire.*
@@ -42,8 +44,7 @@ Pour une exploration détaillée de chaque phase, utilise les guides ci-dessous 
 
 ---
 
-## 🛠️ Guide Technique Rapide
-Si tu as besoin de vérifier une commande ou un paramètre réseau rapidement, consulte le **[GUIDE TECHNIQUE CENTRALISÉ](./docs/TECHNICAL_GUIDE.md)**.
+## Guide Technique Rapide
+Si vous avez besoin de vérifier une commande ou un paramètre réseau rapidement, consultez le **[GUIDE TECHNIQUE CENTRALISÉ](./docs/TECHNICAL_GUIDE.md)**.
 
----
-*Projet réalisé dans le cadre du TP Réseau - Mars 2026*
+
