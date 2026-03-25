@@ -4,7 +4,7 @@ Ce document explique comment connecter un poste de travail au domaine `tp.local`
 
 ---
 
-## 🏗️ Concepts clés : Pourquoi joindre un domaine ?
+## Concepts clés : Pourquoi joindre un domaine ?
 
 Joindre un PC au domaine, ce n'est pas juste le "connecter au réseau". C'est lui dire : "Désormais, tu fais confiance à `SRV-DC01` pour dire qui a le droit de se connecter sur toi".
 
@@ -39,7 +39,7 @@ Une fois connecté, nous vérifions que le client reçoit bien les politiques du
 
 ---
 
-## 💻 Détail des commandes (Pourquoi et Comment ?)
+## Détail des commandes (Pourquoi et Comment ?)
 
 | Commande | Explication détaillée |
 |:--- |:--- |
