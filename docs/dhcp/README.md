@@ -1,16 +1,16 @@
 # DHCP (Dynamic Host Configuration Protocol) - Configuration
 
-Le service DHCP est essentiel pour gérer automatiquement les adresses IP de ton parc informatique.
+Le service DHCP est une brique fondamentale pour la gestion automatisée des configurations IP au sein de l'infrastructure.
 
 ---
 
-## 🏗️ Concepts clés du DHCP
+## Concepts clés du DHCP
 
-### Pourquoi automatiser ?
-Imaginons un réseau avec 200 ordinateurs. Si tu dois aller sur chaque PC pour taper l'IP, le masque, la passerelle et le DNS, cela prendrait des jours et tu ferais des erreurs. Le DHCP fait tout cela en **moins d'une seconde** dès que le PC s'allume.
+### Optimisation de l'administration
+Dans un réseau d'entreprise, la configuration manuelle des adresses IP s'avère chronophage et source d'erreurs critiques. Le service DHCP automatise l'attribution des paramètres réseau (IP, Masque, Passerelle, DNS) de manière fiable et instantanée lors du démarrage des hôtes.
 
-### L'intégration avec l'AD et le DNS
-Notre DHCP est "AD-Integrated". Cela signifie qu'il travaille main dans la main avec le DNS pour enregistrer automatiquement le nom des ordinateurs qui reçoivent une IP.
+### Intégration Active Directory et DNS
+Le service DHCP est intégré à l'Active Directory. Cette synergie permet une mise à jour dynamique des enregistrements DNS (Dynamic DNS) dès qu'un bail est accordé à un client, garantissant la résolution de noms au sein du domaine.
 
 ---
 
@@ -24,13 +24,13 @@ L'étendue `tplocal` définit les règles de distribution.
 
 ---
 
-## 💻 Détail des commandes (Pourquoi ces paramètres ?)
+## Détail des commandes (Justification technique)
 
-| Commande | Explication détaillée |
+| Commande | Justification |
 |:--- |:--- |
-| `Add-WindowsFeature DHCP -IncludeManagementTools` | Installe le service + la console graphique. Sans `-IncludeManagementTools`, tu ne pourrais pas voir le DHCP dans tes outils d'administration. |
-| `Add-DhcpServerInDC` | **Sécurité critique** : Cette commande "autorise" le serveur dans l'Active Directory. Si un serveur DHCP n'est pas autorisé, Windows le bloque pour éviter qu'un pirate ne distribue de mauvaises IP. |
-| `Add-DhcpServerv4Scope` | Crée le réservoir d'IP. On commence à `.50` pour laisser les premières IP (1 à 49) disponibles pour d'autres serveurs ou imprimantes (IP statiques). |
-| `Set-DhcpServerv4OptionValue` | Configure les "cadeaux" bonus envoyés avec l'IP : <br>• **Option 3** : La gateway (le routeur).<br>• **Option 6** : Les serveurs DNS (Indispensable pour l'AD).<br>• **Option 15** : Le nom du domaine (`tp.local`). |
+| `Add-WindowsFeature DHCP -IncludeManagementTools` | Installation du rôle et des outils d'administration console. |
+| `Add-DhcpServerInDC` | **Sécurité** : Autorise le serveur dans l'Active Directory. Un serveur non autorisé ne peut pas distribuer de bails, évitant ainsi les déploiements de serveurs DHCP malveillants ("Rogue DHCP"). |
+| `Add-DhcpServerv4Scope` | Définition de la plage d'adressage. La plage débute à `.50` pour réserver les premières adresses aux serveurs et équipements d'infrastructure (IP statiques). |
+| `Set-DhcpServerv4OptionValue` | Configuration des options transmises aux clients : <br>• **Option 3** : Passerelle par défaut.<br>• **Option 6** : Serveurs DNS (Contrôleurs de domaine).<br>• **Option 15** : Suffixe DNS du domaine (`tp.local`). |
 
 ---
