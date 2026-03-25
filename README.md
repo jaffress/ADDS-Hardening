@@ -1,19 +1,17 @@
-# 📂 Infrastructure Windows Server - AD / DNS / DHCP
+# Infrastructure Windows Server - AD / DNS / DHCP
 
-## Elif JAFFRES
-
-## 📖 Introduction
+## Introduction
 Ce projet documente la mise en place d'une infrastructure réseau sécurisée basée sur Windows Server 2022. L'objectif est de fournir un service d'annuaire (Active Directory) hautement disponible, une résolution de noms (DNS) et une attribution d'adresses dynamique (DHCP).
 
 ---
 
 # Projet Infrastructure Windows Server - AD / DNS / DHCP
 
-Le rapport complet de déploiement de l'infrastructure réseau `tp.local`. Ce projet simule un environnement d'entreprise réel avec deux contrôleurs de domaine redondants et une gestion centralisée des postes clients.
+Bienvenue dans le rapport complet de déploiement de l'infrastructure réseau `tp.local`. Ce projet simule un environnement d'entreprise réel avec deux contrôleurs de domaine redondants et une gestion centralisée des postes clients.
 
 ![Aperçu Infrastructure](./images/serveur01-adforestinstalled-redemarrage.png)
 
-## États
+## 📋 État du Projet
 | Composant | Status | Description |
 | :--- | :--- | :--- |
 | **SRV-DC01** | ✅ Opérationnel | Maître d'opérations, DNS, DHCP |
@@ -25,26 +23,27 @@ Le rapport complet de déploiement de l'infrastructure réseau `tp.local`. Ce pr
 
 ## Navigation dans la Documentation
 
-Pour une exploration détaillée de chaque phase, utilisez les guides ci-dessous :
+Pour une exploration détaillée de chaque phase, veuillez consulter les guides ci-dessous :
 
 ### 1. [Infrastructure Active Directory](./docs/active-directory/README.md)
-*Promotion des contrôleurs, réplication et santé de l'annuaire.*
+*Promotion des contrôleurs, réplication et état de santé de l'annuaire.*
 
 ### 2. [Service DHCP & Réseau](./docs/dhcp/README.md)
-*Automatisation de l'adressage IP et options de portée.*
+*Automatisation de l'adressage IP et configuration des options de portée.*
 
 ### 3. [Intégration Poste Client](./docs/poste-client/README.md)
-*Jonction au domaine et expérience utilisateur.*
+*Jonction au domaine et gestion des sessions utilisateurs.*
 
 ### 4. [Sécurité & Hardening](./docs/securite/README.md)
-*Politiques de mots de passe (ANSSI) et gestion des permissions ACL.*
+*Politiques de mots de passe (ANSSI) et gestion des permissions d'accès.*
 
 ### 5. [Validation & Troubleshooting](./docs/validation/README.md)
-*Preuves de succès et résolution des incidents post-crash.*
+*Preuves de conformité et procédures de reprise après incident.*
 
 ---
 
 ## Guide Technique Rapide
-Si vous avez besoin de vérifier une commande ou un paramètre réseau rapidement, consultez le **[GUIDE TECHNIQUE CENTRALISÉ](./docs/TECHNICAL_GUIDE.md)**.
+Pour une consultation rapide des syntaxes PowerShell et des paramètres réseau, veuillez vous référer au **[GUIDE TECHNIQUE CENTRALISÉ](./docs/TECHNICAL_GUIDE.md)**.
 
-
+---
+*Projet réalisé dans le cadre du TP Réseau - Mars 2026*
