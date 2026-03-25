@@ -1,5 +1,3 @@
----
-
 ## 💡 Pourquoi le DNS est-il lié à l'AD ?
 
 L'Active Directory ne "connaît" pas les adresses IP. Il utilise le DNS pour que les clients trouvent les serveurs. 
