@@ -1,5 +1,7 @@
 # Infrastructure Windows Server - AD / DNS / DHCP
 
+## Elif JAFFRES
+
 ## Introduction
 Ce projet documente la mise en place d'une infrastructure réseau sécurisée basée sur Windows Server 2022. L'objectif est de fournir un service d'annuaire (Active Directory) hautement disponible, une résolution de noms (DNS) et une attribution d'adresses dynamique (DHCP).
 
@@ -46,4 +48,4 @@ Pour une exploration détaillée de chaque phase, veuillez consulter les guides 
 Pour une consultation rapide des syntaxes PowerShell et des paramètres réseau, veuillez vous référer au **[GUIDE TECHNIQUE CENTRALISÉ](./docs/TECHNICAL_GUIDE.md)**.
 
 ---
-*Projet réalisé dans le cadre du TP Réseau - Mars 2026*
+
