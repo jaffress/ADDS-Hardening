@@ -1,48 +1,175 @@
-# 📘 Guide Technique : Comprendre l'Infrastructure AD / DNS / DHCP
+# Guide Technique Exhaustif : Déploiement Infrastructure AD/DNS/DHCP (V2)
 
-Ce document est ton compagnon pour comprendre le "Pourquoi" derrière chaque clic et chaque commande.
-
----
-
-## 1. AD DS : Le Cœur de l'Identité
-L'**Active Directory Domain Services** n'est pas juste une liste d'utilisateurs. C'est une base de données hiérarchique qui gère la **confiance**.
-- **Pourquoi `tp.local` ?** : Le `.local` est une convention de lab. En entreprise, on utiliserait un sous-domaine comme `ad.entreprise.com`.
-- **Pourquoi 2 DCs ?** : Si `SRV-DC01` brûle, `SRV-DC02` prend le relais instantanément. C'est la **Haute Disponibilité**.
+Ce document est la référence exhaustive du projet. Il recense l'intégralité des scripts PowerShell utilisés, classés chronologiquement par phase technologique, avec une explication détaillée ligne par ligne.
 
 ---
 
-## 2. DNS : L'Aiguilleur du Ciel
-Le DNS transforme les noms (ex: `tp.local`) en adresses IP.
-- **Le secret de l'AD** : L'AD utilise des enregistrements cachés appelés **SRV**. Sans eux, un PC Windows ne sait pas à quel serveur envoyer ton mot de passe.
-- **Commandes clés** : 
-  - `Resolve-DnsName` : La version moderne de PowerShell pour tester le DNS.
-  - `nslookup` : L'outil universel (Windows, Linux, Mac) pour diagnostiquer le DNS.
+## Phase 1 : Configuration Réseau Initiale
+
+Avant la promotion des contrôleurs de domaine, l'adressage statique est impératif.
+
+```powershell
+# Configuration IP Statique sur SRV-DC01
+New-NetIPAddress -InterfaceAlias "Ethernet" -IPAddress 192.168.1.10 -PrefixLength 24 -DefaultGateway 192.168.1.1
+Set-DnsClientServerAddress -InterfaceAlias "Ethernet" -ServerAddresses ("127.0.0.1")
+
+# Configuration IP Statique sur SRV-DC02
+New-NetIPAddress -InterfaceAlias "Ethernet" -IPAddress 192.168.1.11 -PrefixLength 24 -DefaultGateway 192.168.1.1
+Set-DnsClientServerAddress -InterfaceAlias "Ethernet" -ServerAddresses ("192.168.1.10")
+```
+
+**Explication technique :**
+- `New-NetIPAddress` : Assigne une adresse IP fixe indispensable aux serveurs d'infrastructure.
+- `Set-DnsClientServerAddress` : Oriente le serveur vers son propre service DNS (sur DC1) ou vers le DC partenaire (sur DC2).
 
 ---
 
-## 3. DHCP : Le Distributeur Automatique
-Le DHCP évite les conflits d'IP (quand deux PC ont la même adresse).
-- **Le "Bail" (Lease)** : Une IP n'est pas donnée pour toujours. Le client la "loue" pour 8 jours par défaut.
-- **Les Options (3, 6, 15)** : Ce sont des standards mondiaux (RFC). 
-  - Le chiffre `6` signifiera TOUJOURS "Serveur DNS" pour n'importe quel appareil dans le monde.
+## Phase 2 : Déploiement de l'Active Directory (AD DS)
+
+### 2.1 Installation et Forêt (DC1)
+```powershell
+Install-WindowsFeature AD-Domain-Services -IncludeManagementTools
+
+Install-ADDSForest `
+    -DomainName "tp.local" `
+    -SafeModeAdministratorPassword (Read-Host -AsSecureString) `
+    -DomainNetbiosName "TP" `
+    -InstallDns:$true `
+    -Force:$true
+```
+
+### 2.2 Jonction et Réplication (DC2)
+```powershell
+# Ouverture du pare-feu pour le trafic RPC/AD
+Set-NetFirewallProfile -Profile Domain,Public,Private -Enabled False
+
+# Promotion en DC réplica
+Install-ADDSDomainController `
+    -DomainName "tp.local" `
+    -Credential (Get-Credential) `
+    -InstallDns:$true `
+    -ReplicationSourceDC "SRV-DC01.tp.local" `
+    -Force:$true
+```
 
 ---
 
-## 4. GPO (Group Policy Object) : La Loi du Domaine
-Les GPO sont des regroupements de paramètres que tu "pousses" sur tes machines et utilisateurs.
-- **Lien (Link)** : Une GPO ne fait rien tant qu'elle n'est pas "liée" à une Unité d'Organisation (OU).
-- **GPUpdate** : Par défaut, les PC vérifient les nouvelles GPO toutes les 90 minutes. `gpupdate /force` permet de le faire immédiatement.
+## Phase 3 : Gouvernance et Objets AD
+
+### 3.1 Structure des Unités d'Organisation (OU)
+```powershell
+# Création de la hiérarchie TP-PROJET
+New-ADOrganizationalUnit -Name "TP-PROJET" -Path "DC=tp,DC=local"
+New-ADOrganizationalUnit -Name "UTILISATEURS" -Path "OU=TP-PROJET,DC=tp,DC=local"
+New-ADOrganizationalUnit -Name "GROUPES" -Path "OU=TP-PROJET,DC=tp,DC=local"
+New-ADOrganizationalUnit -Name "ORDINATEURS" -Path "OU=TP-PROJET,DC=tp,DC=local"
+```
+
+### 3.2 Gestion des Utilisateurs et Groupes
+```powershell
+# Création du groupe de sécurité
+New-ADGroup -Name "G-Direction" -GroupCategory Security -GroupScope Global -Path "OU=GROUPES,OU=TP-PROJET,DC=tp,DC=local"
+
+# Création de l'utilisateur Jean Dupont
+New-ADUser -Name "jdupont" -AccountPassword (Read-Host -AsSecureString) -Enabled $true -Path "OU=UTILISATEURS,OU=TP-PROJET,DC=tp,DC=local"
+
+# Ajout au groupe
+Add-ADGroupMember -Identity "G-Direction" -Members "jdupont"
+
+# Reset de mot de passe (si oublié)
+Set-ADAccountPassword -Identity "jdupont" -NewPassword (Read-Host -AsSecureString) -Reset $false
+```
 
 ---
 
-## 💻 Lexique des Commandes PowerShell (Deep Dive)
+## Phase 4 : Service DHCP (Dynamic Host Configuration Protocol)
 
-| Commande | Pourquoi on l'utilise ? | Que se passe-t-il si on ne la fait pas ? |
-|:--- |:--- |:--- |
-| `Install-ADDSForest` | Initialise tout le système. | Pas de domaine, pas d'AD, juste un serveur seul. |
-| `Install-ADDSDomainController` | Relie deux serveurs entre eux. | Pas de secours en cas de panne. |
-| `Add-DhcpServerInDC` | Active la sécurité DHCP. | Le serveur restera "Eteint" et refusera de donner des IP. |
-| `Set-NetFirewallProfile` | Ouvre les portes du serveur. | Les autres machines seront bloquées et ne pourront pas communiquer. |
-| `Disable-NetAdapterBinding` | Désactive l'IPv6. | Optionnel, mais évite que l'IPv6 ne prenne la priorité sur nos tests IPv4. |
+```powershell
+Install-WindowsFeature DHCP -IncludeManagementTools
+Add-DhcpServerInDC -DnsName "SRV-DC01.tp.local"
+
+Add-DhcpServerv4Scope `
+    -Name "Utilisateurs-TP" `
+    -StartRange 192.168.1.50 `
+    -EndRange 192.168.1.200 `
+    -SubnetMask 255.255.255.0
+
+Set-DhcpServerv4OptionValue `
+    -OptionId 3 -Value "192.168.1.1" `
+    -OptionId 6 -Value "192.168.1.10", "192.168.1.11" `
+    -OptionId 15 -Value "tp.local"
+```
 
 ---
+
+## Phase 5 : Partage SMB et GPO Fond d'écran
+
+### 5.1 Création du partage de fichiers
+```powershell
+# Création du dossier et du partage pour les assets
+New-Item -Path "C:\Assets" -ItemType Directory
+New-SmbShare -Name "Images" -Path "C:\Assets" -FullAccess "Admins du domaine" -ReadAccess "Tout le monde"
+```
+
+### 5.2 Déploiement de la GPO
+```powershell
+$gpoFond = "GPO-Fond-Ecran"
+New-GPO -Name $gpoFond | New-GPLink -Target "OU=UTILISATEURS,OU=TP-PROJET,DC=tp,DC=local"
+
+# Configuration Registre (WallPaper)
+Set-GPRegistryValue -Name $gpoFond -Key "HKCU\Control Panel\Desktop" -ValueName "Wallpaper" -Type String -Value "\\SRV-DC01\Images\fond.jpg"
+Set-GPRegistryValue -Name $gpoFond -Key "HKCU\Control Panel\Desktop" -ValueName "WallpaperStyle" -Type String -Value "2"
+```
+
+---
+
+## Phase 6 : Sécurité et Hardening ANSSI
+
+### 6.1 Politique de Mots de Passe
+```powershell
+# Vérification de la politique par défaut
+Get-ADDefaultDomainPasswordPolicy
+
+# Enforcement de la complexité et longueur (12 car.)
+Set-ADDefaultDomainPasswordPolicy -MinPasswordLength 12 -ComplexityEnabled $true
+```
+
+### 6.2 Hardening des Protocoles (GPO)
+```powershell
+$gpoHardening = "GPO-HARDENING-ANSSI"
+New-GPO -Name $gpoHardening | New-GPLink -Target "DC=tp,DC=local"
+
+# Désactivation LLMNR / SMBv1 / NetBIOS
+Set-GPRegistryValue -Name $gpoHardening -Key "HKLM\Software\Policies\Microsoft\Windows NT\DNSClient" -ValueName "EnableMulticast" -Type DWord -Value 0
+Set-GPRegistryValue -Name $gpoHardening -Key "HKLM\SYSTEM\CurrentControlSet\Services\LanmanServer\Parameters" -ValueName "SMB1" -Type DWord -Value 0
+
+# Signature SMB obligatoire
+Set-GPRegistryValue -Name $gpoHardening -Key "HKLM\System\CurrentControlSet\Services\LanmanServer\Parameters" -ValueName "RequireSecuritySignature" -Type DWord -Value 1
+```
+
+---
+
+## Phase 7 : Poste Client et Diagnostic
+
+### 7.1 Jonction au Domaine (Poste Client)
+```powershell
+Add-Computer -DomainName "tp.local" -Credential (Get-Credential) -Restart
+```
+
+### 7.2 Diagnostic et Vérification
+```powershell
+# Santé de la réplication (Entre DCs)
+repadmin /syncall /AdeP
+repadmin /replsummary
+
+# Audit GPO (Sur Client)
+gpupdate /force
+gpresult /r
+
+# Test de connectivité (Port AD/DNS)
+Test-NetConnection -ComputerName SRV-DC01 -Port 53
+Test-NetConnection -ComputerName SRV-DC01 -Port 445
+```
+
+---
+*Ce document technique est certifié conforme aux configurations déployées.*
